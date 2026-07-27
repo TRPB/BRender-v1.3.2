@@ -201,6 +201,9 @@ br_device_pixelmap* DevicePixelmapGLAllocateFront(br_device* dev, br_output_faci
         goto cleanup_context;
     }
 
+    self->asFront.video.glMinSampleShading_fn =
+        (void (*)(GLclampf))self->asFront.callbacks.get_proc_address("glMinSampleShading");
+
     self->asFront.gl_version = BrResStrDup(self, (char*)glGetString(GL_VERSION));
     self->asFront.gl_vendor = BrResStrDup(self, (char*)glGetString(GL_VENDOR));
     self->asFront.gl_renderer = BrResStrDup(self, (char*)glGetString(GL_RENDERER));

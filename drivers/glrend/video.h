@@ -18,6 +18,7 @@ typedef struct _VIDEO {
     GLint maxFragmentUniformBlocks;
     GLint maxSamples;
     GLfloat maxAnisotropy;
+    void (*glMinSampleShading_fn)(GLclampf value);
 
     struct {
         GLuint program;
