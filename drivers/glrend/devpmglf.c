@@ -4,6 +4,7 @@
 
 #include "drv.h"
 #include <brassert.h>
+#include <string.h>
 
 /*
  * Default dispatch table for device (defined at end of file)
@@ -43,6 +44,7 @@ static struct br_tv_template_entry devicePixelmapFrontTemplateEntries[] = {
     { BRT(FACILITY_O), F(output_facility), BRTV_QUERY, BRTV_CONV_COPY, 0 },
     { BRT(IDENTIFIER_CSTR), F(pm_identifier), BRTV_QUERY | BRTV_ALL, BRTV_CONV_COPY, 0 },
     { BRT(MSAA_SAMPLES_I32), F(msaa_samples), BRTV_QUERY | BRTV_ALL, BRTV_CONV_COPY, 0 },
+    { BRT(SAMPLE_RATE_SHADING_B), F(sample_rate_shading), BRTV_QUERY | BRTV_ALL, BRTV_CONV_COPY, 0 },
     { BRT(OPENGL_CALLBACKS_P), 0, BRTV_QUERY | BRTV_ALL, BRTV_CONV_DIRECT },
     { BRT(OPENGL_VERSION_CSTR), FF(gl_version), BRTV_QUERY | BRTV_ALL, BRTV_CONV_COPY, 0 },
     { BRT(OPENGL_VENDOR_CSTR), FF(gl_vendor), BRTV_QUERY | BRTV_ALL, BRTV_CONV_COPY, 0 },
@@ -67,6 +69,7 @@ struct pixelmapNewTokens {
     br_int_32 pixel_bits;
     br_uint_8 pixel_type;
     int msaa_samples;
+    br_boolean sample_rate_shading;
     br_device_gl_callback_procs* callbacks;
     const char* vertex_shader;
     const char* fragment_shader;
@@ -79,6 +82,7 @@ static struct br_tv_template_entry pixelmapNewTemplateEntries[] = {
     { BRT(PIXEL_BITS_I32), F(pixel_bits), BRTV_SET, BRTV_CONV_COPY },
     { BRT(PIXEL_TYPE_U8), F(pixel_type), BRTV_SET, BRTV_CONV_COPY },
     { BRT(MSAA_SAMPLES_I32), F(msaa_samples), BRTV_SET, BRTV_CONV_COPY },
+    { BRT(SAMPLE_RATE_SHADING_B), F(sample_rate_shading), BRTV_SET, BRTV_CONV_COPY },
     { BRT(OPENGL_CALLBACKS_P), F(callbacks), BRTV_SET, BRTV_CONV_COPY },
     { BRT(OPENGL_FRAGMENT_SHADER_STR), F(fragment_shader), BRTV_SET, BRTV_CONV_COPY }
 };
@@ -175,6 +179,7 @@ br_device_pixelmap* DevicePixelmapGLAllocateFront(br_device* dev, br_output_faci
         return NULL;
 
     self = BrResAllocate(dev->res, sizeof(br_device_pixelmap), BR_MEMORY_OBJECT);
+    memset(self, 0, sizeof(br_device_pixelmap));
 
     BrSprintfN(tmp, sizeof(tmp) - 1, "OpenGL:Screen:%dx%d", pt.width, pt.height);
     self->pm_identifier = BrResStrDup(self, tmp);
@@ -183,6 +188,7 @@ br_device_pixelmap* DevicePixelmapGLAllocateFront(br_device* dev, br_output_faci
     self->output_facility = outfcty;
     self->use_type = BRT_NONE;
     self->msaa_samples = pt.msaa_samples;
+    self->sample_rate_shading = pt.sample_rate_shading;
     self->screen = self;
     self->clut = dev->clut;
 
@@ -245,6 +251,16 @@ br_device_pixelmap* DevicePixelmapGLAllocateFront(br_device* dev, br_output_faci
     self->asFront.num_refs = 0;
 
     SetupFullScreenRectGeometry(self);
+
+    /*
+     * Pre-clear both swap chain buffers so GPU VRAM garbage never shows on the first frame.
+     * BrRendererFrameBegin (which does the regular glClear) is called only AFTER the first swap,
+     * so without this the initial back buffer content is undefined.
+     */
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    DevicePixelmapGLSwapBuffers(self);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     ObjectContainerAddFront(self->output_facility, (br_object*)self);
     GL_CHECK_ERROR();

@@ -117,7 +117,7 @@ static void BR_CMETHOD_DECL(br_renderer_gl, sceneBegin)(br_renderer* self) {
 
     if (self->pixelmap->msaa_samples) {
         glEnable(GL_MULTISAMPLE);
-        if (hVideo->glMinSampleShading_fn) {
+        if (self->pixelmap->sample_rate_shading && hVideo->glMinSampleShading_fn) {
 #ifndef GL_SAMPLE_SHADING
 #define GL_SAMPLE_SHADING 0x8C36
 #endif

@@ -58,6 +58,11 @@ typedef struct br_device_pixelmap {
     br_int_32 msaa_samples;
 
     /*
+     * Enable per-sample shading (GL_SAMPLE_SHADING) on top of MSAA.
+     */
+    br_boolean sample_rate_shading;
+
+    /*
      * Pointer to renderer currently opened on this pixelmap (N.B. This is only set on the screen
      * pixelmap)
      */

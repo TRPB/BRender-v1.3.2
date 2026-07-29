@@ -449,6 +449,7 @@ typedef enum {
 	BRT_STRING                     =       36,
 	BRT_SUBDIVIDE                  =      193,
 	BRT_SUBDIVIDE_TOLERANCE_I32    =      194,
+	BRT_SAMPLE_RATE_SHADING_B      =      541,
 	BRT_SURFACE                    =      169,
 	BRT_SURFACE_B                  =      387,
 	BRT_SURFACE_C_CUSTOM_P         =      310,
@@ -992,6 +993,7 @@ typedef enum {
 #define BRT_STRING                           36
 #define BRT_SUBDIVIDE                       193
 #define BRT_SUBDIVIDE_TOLERANCE_I32         194
+#define BRT_SAMPLE_RATE_SHADING_B           541
 #define BRT_SURFACE                         169
 #define BRT_SURFACE_B                       387
 #define BRT_SURFACE_C_CUSTOM_P              310
