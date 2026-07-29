@@ -97,6 +97,19 @@ br_boolean VIDEOI_CompileBRenderShader(HVIDEO hVideo, const char* vertPath, cons
         }
 
         VIDEOI_GetShaderVariables(hVideo);
+
+        /* Check driver's UBO layout vs C struct. If the driver treats vec3 as 16 bytes
+         * (non-conformant but common), driver_model_size > sizeof(shader_data_model). */
+        {
+            GLint driver_model_size = 0;
+            glGetActiveUniformBlockiv(hVideo->brenderProgram.program,
+                hVideo->brenderProgram.blockIndexModel,
+                GL_UNIFORM_BLOCK_DATA_SIZE, &driver_model_size);
+            BrLogPrintf("GLREND: br_model_state: C sizeof=%zu, driver GL_UNIFORM_BLOCK_DATA_SIZE=%d%s\n",
+                sizeof(shader_data_model), driver_model_size,
+                driver_model_size != (GLint)sizeof(shader_data_model)
+                    ? " <-- MISMATCH: driver pads vec3 to 16 bytes!" : " (match)");
+        }
     }
 
     GL_CHECK_ERROR();

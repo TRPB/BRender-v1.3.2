@@ -18,6 +18,7 @@ typedef struct _VIDEO {
     GLint maxFragmentUniformBlocks;
     GLint maxSamples;
     GLfloat maxAnisotropy;
+    void (*glMinSampleShading_fn)(GLclampf value);
 
     struct {
         GLuint program;
@@ -111,7 +112,7 @@ typedef struct shader_data_model {
     alignas(4) uint32_t disable_colour_key;
     alignas(4) uint32_t disable_texture;
     alignas(4) uint32_t fog_enabled;
-    alignas(16) br_vector3 fog_colour;
+    alignas(16) br_vector4 fog_colour;
     alignas(4) float fog_min;
     alignas(4) float fog_max;
     alignas(4) float alpha;
@@ -119,6 +120,7 @@ typedef struct shader_data_model {
 
 
 } shader_data_model;
+BR_STATIC_ASSERT(sizeof(shader_data_model) == 576, "shader_data_model layout changed — verify GLSL br_model_state matches");
 #pragma pack(pop)
 
 #ifdef __cplusplus

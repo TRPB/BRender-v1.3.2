@@ -115,8 +115,16 @@ static void BR_CMETHOD_DECL(br_renderer_gl, sceneBegin)(br_renderer* self) {
     glBindBufferBase(GL_UNIFORM_BUFFER, hVideo->brenderProgram.blockBindingModel, hVideo->brenderProgram.uboModel);
     glUniform1i(hVideo->brenderProgram.uniforms.main_texture, hVideo->brenderProgram.mainTextureBinding);
 
-    if (self->pixelmap->msaa_samples)
+    if (self->pixelmap->msaa_samples) {
         glEnable(GL_MULTISAMPLE);
+        if (self->pixelmap->sample_rate_shading && hVideo->glMinSampleShading_fn) {
+#ifndef GL_SAMPLE_SHADING
+#define GL_SAMPLE_SHADING 0x8C36
+#endif
+            glEnable(GL_SAMPLE_SHADING);
+            hVideo->glMinSampleShading_fn(1.0f);
+        }
+    }
 
 
 

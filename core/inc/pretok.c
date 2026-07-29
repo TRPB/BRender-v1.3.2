@@ -304,6 +304,7 @@
 	{ {0,}, "MODULATE_B",                   BRT_BOOLEAN,            BRT_MODULATE_B,                        8},
 	{ {0,}, "MOTOROLA",                     BRT_NONE,               BRT_MOTOROLA,                          8},
 	{ {0,}, "MSAA_SAMPLES_I32",             BRT_INT_32,             BRT_MSAA_SAMPLES_I32,                 12},
+	{ {0,}, "SAMPLE_RATE_SHADING_B",        BRT_BOOLEAN,            BRT_SAMPLE_RATE_SHADING_B,            19},
 	{ {0,}, "NEAREST",                      BRT_NONE,               BRT_NEAREST,                           7},
 	{ {0,}, "NEVER",                        BRT_NONE,               BRT_NEVER,                             5},
 	{ {0,}, "NONE",                         BRT_NONE,               BRT_NONE,                              4},
@@ -538,4 +539,4 @@
 	{ {0,}, "YON_Z_X",                      BRT_FIXED,              BRT_YON_Z_X,                           5},
 	{ {0,}, "YUV_16",                       BRT_NONE,               BRT_YUV_16,                            6},
 	{ {0,}, "ZERO_IS_TRANSPARENT",          BRT_NONE,               BRT_ZERO_IS_TRANSPARENT,              19},
-#define NEXT_FREE_TOKEN 541
+#define NEXT_FREE_TOKEN 542

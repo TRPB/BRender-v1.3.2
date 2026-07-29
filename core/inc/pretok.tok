@@ -865,6 +865,7 @@ LPDIRECTDRAWSURFACE             pointer
 
 
 MSAA_SAMPLES						int_32
+SAMPLE_RATE_SHADING					boolean
 
 # OpenGL specific tokens
 #OPENGL_GET_PROC_ADDRESS_CALLBACK	pointer

@@ -30,6 +30,7 @@ static struct br_tv_template_entry outputFacilityTemplateEntries[] = {
      * These are passed to pixelmapNew, which will handle them.
      */
     { BRT(MSAA_SAMPLES_I32), 0, BRTV_QUERY | BRTV_ALL, BRTV_CONV_DIRECT },
+    { BRT(SAMPLE_RATE_SHADING_B), 0, BRTV_QUERY | BRTV_ALL, BRTV_CONV_DIRECT },
     { BRT(WINDOW_HANDLE_H), 0, BRTV_QUERY | BRTV_ALL, BRTV_CONV_DIRECT },
     { BRT(OPENGL_CALLBACKS_P), 0, BRTV_QUERY | BRTV_ALL, BRTV_CONV_DIRECT },
     { BRT(OPENGL_VERTEX_SHADER_STR), 0, BRTV_QUERY | BRTV_ALL, BRTV_CONV_DIRECT },
