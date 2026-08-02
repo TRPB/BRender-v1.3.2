@@ -544,6 +544,13 @@ static br_error BR_CMETHOD_DECL(br_renderer_gl, stateQueryPerformance)(br_render
 }
 
 static br_error BR_CMETHOD_DECL(br_renderer_gl, frameBegin)(br_renderer* self) {
+    /* The sky/horizon dome is positioned at sky_distance = yon_z - 1 (see MungeSkyModel),
+     * i.e. right on the far clip plane. At certain camera pitch/yaw angles a thin strip of
+     * the farthest (horizon) band crosses the far plane and is clipped away, leaving an
+     * uncovered band at the world horizon (black against the cleared framebuffer). Depth
+     * clamping disables far-plane clipping and clamps depth instead, so the horizon band
+     * always rasterizes (clamped to max depth, staying behind terrain). */
+    glEnable(GL_DEPTH_CLAMP);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     self->frame_stats.model_count = 0;
     return BRE_OK;
