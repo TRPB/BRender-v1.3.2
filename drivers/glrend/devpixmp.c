@@ -305,6 +305,7 @@ br_error BR_CMETHOD_DECL(br_device_pixelmap_gl, rectangleFill)(br_device_pixelma
     GLbitfield mask;
     br_uint_8* px8;
     br_uint_16* px16;
+    int y, x;
     float a = (float)((colour & 0xFF000000) >> 24) / 255.0f;
     float r = (float)((colour & 0x00FF0000) >> 16) / 255.0f;
     float g = (float)((colour & 0x0000FF00) >> 8) / 255.0f;
@@ -333,8 +334,8 @@ br_error BR_CMETHOD_DECL(br_device_pixelmap_gl, rectangleFill)(br_device_pixelma
             switch (self->pm_type) {
             case BR_PMT_INDEX_8:
                 px8 = self->pm_pixels;
-                for (int y = rect->y; y < rect->y + rect->h; y++) {
-                    for (int x = rect->x; x < rect->x + rect->w; x++) {
+                for (y = rect->y; y < rect->y + rect->h; y++) {
+                    for (x = rect->x; x < rect->x + rect->w; x++) {
                         px8[y * self->pm_width + x] = BR_ALPHA(colour);
                     }
                 }
@@ -342,8 +343,8 @@ br_error BR_CMETHOD_DECL(br_device_pixelmap_gl, rectangleFill)(br_device_pixelma
 
             case BR_PMT_RGB_565:
                 px16 = self->pm_pixels;
-                for (int y = rect->y; y < rect->y + rect->h; y++) {
-                    for (int x = rect->x; x < rect->x + rect->w; x++) {
+                for (y = rect->y; y < rect->y + rect->h; y++) {
+                    for (x = rect->x; x < rect->x + rect->w; x++) {
                         px16[y * self->pm_width + x] = colour & 0xffff;
                     }
                 }
@@ -386,11 +387,12 @@ br_error BR_CMETHOD_DECL(br_device_pixelmap_gl, rectangleCopyTo)(br_device_pixel
     switch (src->pm_type) {
 
     case BR_PMT_RGB_565: {
+        int y, x;
         br_uint_16* buffer = BrScratchAllocate(sizeof(uint16_t) * sr->w * sr->h);
         br_uint_16* buffer_ptr = buffer;
         br_uint_16* src_px = src->pm_pixels;
-        for (int y = sr->y; y < sr->y + sr->h; y++) {
-            for (int x = sr->x; x < sr->x + sr->w; x++) {
+        for (y = sr->y; y < sr->y + sr->h; y++) {
+            for (x = sr->x; x < sr->x + sr->w; x++) {
                 br_uint_16 c = src_px[y * src->pm_row_bytes / 2 + x];
                 *buffer_ptr = c;
                 buffer_ptr++;
@@ -401,6 +403,7 @@ br_error BR_CMETHOD_DECL(br_device_pixelmap_gl, rectangleCopyTo)(br_device_pixel
         break;
     }
     case BR_PMT_INDEX_8: {
+        int y, x;
         uint32_t* buffer = BrScratchAllocate(sizeof(uint32_t) * sr->w * sr->h);
         uint32_t* buffer_ptr = buffer;
         char* src_px = src->pm_pixels;
@@ -410,8 +413,8 @@ br_error BR_CMETHOD_DECL(br_device_pixelmap_gl, rectangleCopyTo)(br_device_pixel
         } else {
             map = ObjectDevice(self)->clut->entries;
         }
-        for (int y = sr->y; y < sr->y + sr->h; y++) {
-            for (int x = sr->x; x < sr->x + sr->w; x++) {
+        for (y = sr->y; y < sr->y + sr->h; y++) {
+            for (x = sr->x; x < sr->x + sr->w; x++) {
                 int index = src_px[y * src->pm_row_bytes + x];
                 *buffer_ptr = map[index];
                 buffer_ptr++;

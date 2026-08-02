@@ -450,6 +450,7 @@ static br_error BR_CMETHOD_DECL(br_renderer_gl, stateDefault)(br_renderer* self,
 
 static br_error BR_CMETHOD_DECL(br_renderer_gl, stateMask)(br_renderer* self, br_uint_32* mask, br_token* parts, int n_parts) {
     br_uint_32 m;
+    int i;
 
     (void)self;
 
@@ -457,7 +458,7 @@ static br_error BR_CMETHOD_DECL(br_renderer_gl, stateMask)(br_renderer* self, br
         return BRE_FAIL;
 
     m = 0;
-    for (int i = 0; i < n_parts; i++) {
+    for (i = 0; i < n_parts; i++) {
         switch (parts[i]) {
         case BRT_SURFACE:
             m |= MASK_STATE_SURFACE;

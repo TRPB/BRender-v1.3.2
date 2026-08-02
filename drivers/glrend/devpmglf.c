@@ -230,9 +230,12 @@ br_device_pixelmap* DevicePixelmapGLAllocateFront(br_device* dev, br_output_faci
     glGetIntegerv(GL_NUM_EXTENSIONS, &self->asFront.gl_num_extensions);
 
     self->asFront.gl_extensions = BrResAllocate(self, sizeof(char*) * (self->asFront.gl_num_extensions + 1), BR_MEMORY_DRIVER);
-    for (GLuint i = 0; i < self->asFront.gl_num_extensions; ++i) {
-        const GLubyte* ext = glGetStringi(GL_EXTENSIONS, i);
-        self->asFront.gl_extensions[i] = BrResStrDup(self->asFront.gl_extensions, (char*)ext);
+    {
+        GLuint i;
+        for (i = 0; i < self->asFront.gl_num_extensions; ++i) {
+            const GLubyte* ext = glGetStringi(GL_EXTENSIONS, i);
+            self->asFront.gl_extensions[i] = BrResStrDup(self->asFront.gl_extensions, (char*)ext);
+        }
     }
     self->asFront.gl_extensions[self->asFront.gl_num_extensions] = NULL;
 

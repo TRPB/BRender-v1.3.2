@@ -111,12 +111,13 @@ static void apply_depth_properties(state_stack* state, uint32_t states) {
 
 // take a pixelmap and palette and convert 8 bit to 32 bit just in time
 static void update_paletted_texture(br_pixelmap *src, br_uint_32 *palette) {
+    int y, x;
     uint32_t* buffer = BrScratchAllocate(sizeof(uint32_t) * src->width * src->height);
     uint32_t* buffer_ptr = buffer;
     br_uint_8* src_px = src->pixels;
 
-    for (int y = 0; y < src->height; y++) {
-        for (int x = 0; x < src->width; x++) {
+    for (y = 0; y < src->height; y++) {
+        for (x = 0; x < src->width; x++) {
             int index = src_px[y * src->row_bytes + x];
             *buffer_ptr = (0xff000000 | BR_BLU(palette[index]) << 16 | BR_GRN(palette[index]) << 8 | BR_RED(palette[index]));
             buffer_ptr++;
