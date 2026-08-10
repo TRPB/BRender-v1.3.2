@@ -632,9 +632,9 @@ static const struct br_device_pixelmap_dispatch devicePixelmapDispatch = {
     ._rectangleFill = BR_CMETHOD_REF(br_device_pixelmap_gl, rectangleFill),
     ._pixelSet = BR_CMETHOD_REF(br_device_pixelmap_mem, pixelSet),
     ._line = BR_CMETHOD_REF(br_device_pixelmap_mem, line),
-    ._copyBits = BR_CMETHOD_REF(br_device_pixelmap_fail, copyBits),
+    ._copyBits = BR_CMETHOD_REF(br_device_pixelmap_mem, copyBits),
 
-    ._text = BR_CMETHOD_REF(br_device_pixelmap_gl, text),
+    ._text = BR_CMETHOD_REF(br_device_pixelmap_gen, text),
     ._textBounds = BR_CMETHOD_REF(br_device_pixelmap_gen, textBounds),
 
     ._rowSize = BR_CMETHOD_REF(br_device_pixelmap_fail, rowSize),
