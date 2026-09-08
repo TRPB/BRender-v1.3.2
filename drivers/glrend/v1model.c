@@ -155,6 +155,11 @@ static void apply_stored_properties(HVIDEO hVideo, state_stack* state, uint32_t 
         switch (state->cull.type) {
         case BRT_ONE_SIDED:
         default: /* Default BRender policy, so default. */
+            /* Stated explicitly rather than relying on the GL default: this is
+             * the assumption that BRender's face winding matches GL's idea of
+             * front-facing, and it had never been exercised while culling was
+             * switched off. */
+            glFrontFace(GL_CCW);
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
             break;
@@ -330,9 +335,20 @@ void StoredGLRenderGroup(br_geometry_stored* self, br_renderer* renderer, const 
     glBindVertexArray(self->gl_vao);
 
     if (stored) {
-        // jeff: disable culling to match behavior of existing hardware drivers
-        apply_stored_properties(hVideo, &stored->state, MASK_STATE_PRIMITIVE | MASK_STATE_SURFACE /*| MASK_STATE_CULL */,
-            &model, screen->asFront.tex_white);
+        // Culling was disabled here to match the behaviour of the original
+        // hardware drivers, which did not cull. That leaves back faces drawn,
+        // and where a surface is modelled with zero thickness - one quad for
+        // the top, another in the same plane for the underside - the two tie on
+        // depth and the winner is decided per pixel, so the surface flickers
+        // between their textures. Armourgeddon's arena floor does this, wood
+        // underside against concrete top. The software renderer culls and picks
+        // the concrete, so this only showed in hardware mode.
+        //
+        // The state itself is already computed correctly per material by
+        // prepmatl.c (ONE_SIDED by default, TWO_SIDED or NONE where the
+        // material asks for it), so applying it is all that is needed.
+        apply_stored_properties(hVideo, &stored->state,
+            MASK_STATE_PRIMITIVE | MASK_STATE_SURFACE | MASK_STATE_CULL, &model, screen->asFront.tex_white);
     } else {
         /* If there's no stored state, apply all states from global. */
         GLuint default_tex;
@@ -345,8 +361,9 @@ void StoredGLRenderGroup(br_geometry_stored* self, br_renderer* renderer, const 
         renderer->state.current->surface = groupinfo->default_state->state.surface;
         renderer->state.current->prim = groupinfo->default_state->state.prim;
         renderer->state.current->cull = groupinfo->default_state->state.cull;
-        // Jeff: disable culling to match behavior of existing hardware drivers
-        apply_stored_properties(hVideo, renderer->state.current, MASK_STATE_PRIMITIVE | MASK_STATE_SURFACE /*| MASK_STATE_CULL */, &model, default_tex);
+        // See the note above on why culling is applied rather than skipped.
+        apply_stored_properties(hVideo, renderer->state.current,
+            MASK_STATE_PRIMITIVE | MASK_STATE_SURFACE | MASK_STATE_CULL, &model, default_tex);
     }
 
     BrVector4Set(&model.clear_colour, 0.0f, 0.0f, 0.0f, 0.0f);
