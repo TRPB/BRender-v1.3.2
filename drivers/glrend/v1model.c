@@ -129,7 +129,29 @@ static void update_paletted_texture(br_pixelmap *src, br_uint_32 *palette) {
     GL_CHECK_ERROR();
 }
 
-static void apply_stored_properties(HVIDEO hVideo, state_stack* state, uint32_t states, shader_data_model* model, GLuint tex_default) {
+/*
+ * Which winding GL should treat as front-facing, for a given model-to-view
+ * transform.
+ *
+ * A transform whose determinant is negative reflects rather than rotates, and
+ * reflection reverses the winding of every triangle it carries. Assuming CCW
+ * unconditionally is therefore only right for the ordinary case: under a
+ * reflection GL culls exactly the faces it should keep, so one-sided geometry
+ * shows its far side, or vanishes where it has no far side.
+ *
+ * Carmageddon's rear-view mirror is such a transform - init.c builds the
+ * rearview camera as identity with m[2][2] negated, which is what makes it read
+ * as a mirror rather than merely a view behind. Before culling was applied the
+ * winding was never consulted and this could not be noticed.
+ */
+static GLenum front_face_for(const br_matrix34* m) {
+    br_scalar det = m->m[0][0] * (m->m[1][1] * m->m[2][2] - m->m[1][2] * m->m[2][1])
+                  - m->m[0][1] * (m->m[1][0] * m->m[2][2] - m->m[1][2] * m->m[2][0])
+                  + m->m[0][2] * (m->m[1][0] * m->m[2][1] - m->m[1][1] * m->m[2][0]);
+    return det < BR_SCALAR(0.0) ? GL_CW : GL_CCW;
+}
+
+static void apply_stored_properties(HVIDEO hVideo, state_stack* state, uint32_t states, shader_data_model* model, GLuint tex_default, GLenum front_face) {
     br_boolean blending_on;
 
     /* Only use the states we want (if valid). */
@@ -155,11 +177,11 @@ static void apply_stored_properties(HVIDEO hVideo, state_stack* state, uint32_t 
         switch (state->cull.type) {
         case BRT_ONE_SIDED:
         default: /* Default BRender policy, so default. */
-            /* Stated explicitly rather than relying on the GL default: this is
-             * the assumption that BRender's face winding matches GL's idea of
-             * front-facing, and it had never been exercised while culling was
-             * switched off. */
-            glFrontFace(GL_CCW);
+            /* Stated explicitly rather than relying on the GL default, and
+             * taken from the transform rather than assumed: a reflecting
+             * model-to-view matrix reverses the winding of everything it
+             * carries. See front_face_for. */
+            glFrontFace(front_face);
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
             break;
@@ -348,7 +370,8 @@ void StoredGLRenderGroup(br_geometry_stored* self, br_renderer* renderer, const 
         // prepmatl.c (ONE_SIDED by default, TWO_SIDED or NONE where the
         // material asks for it), so applying it is all that is needed.
         apply_stored_properties(hVideo, &stored->state,
-            MASK_STATE_PRIMITIVE | MASK_STATE_SURFACE | MASK_STATE_CULL, &model, screen->asFront.tex_white);
+            MASK_STATE_PRIMITIVE | MASK_STATE_SURFACE | MASK_STATE_CULL, &model, screen->asFront.tex_white,
+            front_face_for(&renderer->state.current->matrix.model_to_view));
     } else {
         /* If there's no stored state, apply all states from global. */
         GLuint default_tex;
@@ -363,7 +386,8 @@ void StoredGLRenderGroup(br_geometry_stored* self, br_renderer* renderer, const 
         renderer->state.current->cull = groupinfo->default_state->state.cull;
         // See the note above on why culling is applied rather than skipped.
         apply_stored_properties(hVideo, renderer->state.current,
-            MASK_STATE_PRIMITIVE | MASK_STATE_SURFACE | MASK_STATE_CULL, &model, default_tex);
+            MASK_STATE_PRIMITIVE | MASK_STATE_SURFACE | MASK_STATE_CULL, &model, default_tex,
+            front_face_for(&renderer->state.current->matrix.model_to_view));
     }
 
     BrVector4Set(&model.clear_colour, 0.0f, 0.0f, 0.0f, 0.0f);
